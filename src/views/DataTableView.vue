@@ -4,9 +4,20 @@
       <InputSwitch v-model="metaKey" inputId="input-metakey" />
       <label for="input-metakey">Single Selection</label>
     </div> -->
+    <div class="p-mb-2">
+      <MultiSelect
+        v-model="selectedColumns"
+        :options="columnOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Select columns"
+        @onChange="updateDisplayedColumns"
+      ></MultiSelect>
+    </div>
     <DataTable
       v-model:filters="filters"
       v-model:editingRows="editingRows"
+      :columns="displayedColumns"
       @row-edit-save="onRowEditSave"
       tableClass="editable-cells-table"
       editMode="row"
@@ -22,7 +33,6 @@
     >
       <!-- multiSeletion -->
       <Column selectionMode="multiple" :exportable="false"></Column>
-
       <!-- add new row and delete -->
       <template #header>
         <div class="flex justify-content-between" style="margin: 0">
@@ -55,6 +65,15 @@
               @click="confirmDeleteSelected"
               :disabled="!selectedCustomers || !selectedCustomers.length"
             />
+            <!-- <Dropdown
+              v-model="selectedColumn"
+              :options="columnOptions"
+              :optionLabel="'label'"
+              :optionValue="'value'"
+              placeholder="Select a Column"
+              @change="toggleColumnVisibility"
+            >
+            </Dropdown> -->
           </div>
           <span class="p-input-icon-left">
             <i class="pi pi-search" />
@@ -92,6 +111,7 @@
       <Column rowReorder headerStyle="width: 3rem" :reorderableColumn="false" />
 
       <Column expander></Column>
+      <!-- <Button @click="seen = !seen">hide</Button> -->
 
       <Column
         header="Name"
@@ -115,31 +135,11 @@
             @input="filterCallback()"
             placeholder="search by name"
           />
-          <Button @click="hideDialog">ss</Button>
+          <!-- <p v-if="seen">Hidden Element</p> -->
         </template>
       </Column>
       <Column
-        header="Balance"
-        sortable
-        field="balance"
-        style="min-width: 12rem"
-        :style="useRowEditing === false ? 'display: none' : ''"
-      >
-        <template #editor="{ data, field }">
-          <InputText v-model="data[field]" />
-        </template>
-        <template #filter="{ filterModel, filterCallback }">
-          <InputText
-            v-model="filterModel.value"
-            type="text"
-            @input="filterCallback()"
-            class="p-column-filter"
-            placeholder="Search by Balance"
-          />
-        </template>
-      </Column>
-      <Column
-        header="company"
+        header="Company"
         sortable
         field="company"
         style="min-width: 12rem"
@@ -160,6 +160,26 @@
             @input="filterCallback()"
             class="p-column-filter"
             placeholder="Search by Company"
+          />
+        </template>
+      </Column>
+
+      <Column
+        header="Balance"
+        sortable
+        field="balance"
+        style="min-width: 12rem"
+      >
+        <template #editor="{ data, field }">
+          <InputText v-model="data[field]" />
+        </template>
+        <template #filter="{ filterModel, filterCallback }">
+          <InputText
+            v-model="filterModel.value"
+            type="text"
+            @input="filterCallback()"
+            class="p-column-filter"
+            placeholder="Search by Balance"
           />
         </template>
       </Column>
@@ -332,9 +352,9 @@
 
 <script setup>
 import { FilterMatchMode } from "primevue/api";
-import { ref, onMounted } from "vue";
-import { useToast } from "primevue/usetoast";
+import { ref, onMounted, computed, reactive } from "vue";
 import { CustomerService } from "../service/ProductService";
+// const seen = ref(true);
 const customers = ref();
 const customer = ref();
 const submitted = ref(false);
@@ -345,10 +365,33 @@ const editingRows = ref([]);
 const deleteCustomerDialog = ref(false);
 const deleteCustomersDialog = ref(false);
 const customerDialog = ref(false);
+
+const visibleColumns = reactive({ name: true, company: true, balance: true });
+const selectedColumns = ref([]);
+const columnOptions = ref([
+  { label: "Name", value: "name" },
+  { label: "Company", value: "company" },
+  { label: "Balance", value: "balance" },
+]);
+
+const columns = ref([
+  { field: "name", visible: true },
+  { field: "company", visible: true },
+  { field: "balance", visible: true },
+]);
+
+const displayedColumns = computed(() =>
+  columns.value.filter((column) => column.visible)
+);
+
+function updateDisplayedColumns() {
+  columns.value.forEach((column) => {
+    column.visible = selectedColumns.value.includes(column.field);
+  });
+}
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-  // "country.name": { value: null, matchMode: FilterMatchMode.STARTS_WITH },
   balance: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
   company: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
 });
@@ -523,6 +566,7 @@ const getOrderSeverity = (order) => {
 //   // cardElement.classList.toggle("dark-mode");
 //   console.log(DataTable);
 //   DataTable.classList.toggle("dark-mode");
+
 // };
 </script>
 <style scoped></style>
