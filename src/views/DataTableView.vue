@@ -4,20 +4,9 @@
       <InputSwitch v-model="metaKey" inputId="input-metakey" />
       <label for="input-metakey">Single Selection</label>
     </div> -->
-    <div class="p-mb-2">
-      <MultiSelect
-        v-model="selectedColumns"
-        :options="columnOptions"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Select columns"
-        @onChange="updateDisplayedColumns"
-      ></MultiSelect>
-    </div>
     <DataTable
       v-model:filters="filters"
       v-model:editingRows="editingRows"
-      :columns="displayedColumns"
       @row-edit-save="onRowEditSave"
       tableClass="editable-cells-table"
       editMode="row"
@@ -31,8 +20,8 @@
       :rows="5"
       :rowsPerPageOptions="[5, 10, 20, 50]"
     >
-      <!-- multiSeletion -->
       <Column selectionMode="multiple" :exportable="false"></Column>
+
       <!-- add new row and delete -->
       <template #header>
         <div class="flex justify-content-between" style="margin: 0">
@@ -65,15 +54,41 @@
               @click="confirmDeleteSelected"
               :disabled="!selectedCustomers || !selectedCustomers.length"
             />
-            <!-- <Dropdown
-              v-model="selectedColumn"
-              :options="columnOptions"
-              :optionLabel="'label'"
-              :optionValue="'value'"
-              placeholder="Select a Column"
-              @change="toggleColumnVisibility"
-            >
-            </Dropdown> -->
+
+            <!-- <div class="dropdown">
+              <button class="dropbtn">Select an option</button>
+              <div class="dropdown-content">
+                <a href="#" onclick="handleSelection('icon1')">
+                  <i class="fa fa-home"></i> Home</a
+                >
+                <a href="#" onclick="handleSelection('icon2')">
+                  <i class="fa fa-user"></i> Profile</a
+                >
+                <a href="#" onclick="handleSelection('icon3')">
+                  <i class="fa fa-cog"></i> Settings</a
+                >
+              </div>
+            </div> -->
+
+            <div class="dropdown">
+              <button class="dropbtn">Select an option</button>
+              <div class="dropdown-content">
+                <a href="#" data-id="name">
+                  <span>Name</span>
+                  <button @click="handleClick">show/hide</button>
+                </a>
+
+                <a href="#" data-id="company">
+                  <span>Company</span>
+                  <button @click="handleClick">show/hide</button>
+                </a>
+
+                <a href="#" data-id="balance">
+                  <span>Balance</span>
+                  <button @click="handleClick">show/hide</button>
+                </a>
+              </div>
+            </div>
           </div>
           <span class="p-input-icon-left">
             <i class="pi pi-search" />
@@ -118,6 +133,8 @@
         rowReorder
         sortable
         field="name"
+        id="same"
+        class="same"
         style="min-width: 12rem"
       >
         <template #editor="{ data, field }">
@@ -142,6 +159,8 @@
         header="Company"
         sortable
         field="company"
+        class="same"
+        id="same"
         style="min-width: 12rem"
       >
         <template #editor="{ data, field }">
@@ -167,6 +186,8 @@
       <Column
         header="Balance"
         sortable
+        class="same"
+        id="same"
         field="balance"
         style="min-width: 12rem"
       >
@@ -367,7 +388,7 @@ const deleteCustomersDialog = ref(false);
 const customerDialog = ref(false);
 
 const visibleColumns = reactive({ name: true, company: true, balance: true });
-const selectedColumns = ref([]);
+// const selectedColumns = ref([]);
 const columnOptions = ref([
   { label: "Name", value: "name" },
   { label: "Company", value: "company" },
@@ -380,15 +401,29 @@ const columns = ref([
   { field: "balance", visible: true },
 ]);
 
-const displayedColumns = computed(() =>
-  columns.value.filter((column) => column.visible)
-);
+const handleClick = (event) => {
+  let optionId = event.target.parentElement.getAttribute("data-id");
+  // Do something with the selected option ID
+  let columnsShown = document.querySelectorAll('[id="same"]');
+  console.log(columnsShown);
+  for (let i = 0; i < columnsShown.length; i++) {
+    console.log(columnsShown[i]);
+  }
+  // columnsShown.map((column) => {
+  // });
+  // console.log(columnsShown);
+  console.log("Selected option ID: " + optionId);
+  // let showColumns = columns.columnsShown.filter((col) => {
+  //   col.id == optionId;
+  // });
+  // showColumns.classList.toggle("hide-column");
+};
 
-function updateDisplayedColumns() {
-  columns.value.forEach((column) => {
-    column.visible = selectedColumns.value.includes(column.field);
-  });
-}
+const selectedColumns = ref(columns.value);
+const onToggle = (val) => {
+  selectedColumns.value = columns.value.filter((col) => val.includes(col));
+};
+
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
@@ -435,7 +470,6 @@ const deleteCustomer = () => {
   // });
 };
 const confirmDeleteSelected = () => {
-  console.log("confirmed");
   deleteCustomersDialog.value = true;
 };
 const saveProduct = () => {
@@ -527,6 +561,7 @@ const findIndexById = (id) => {
 
   return index;
 };
+
 const getSeverity = (product) => {
   switch (product.inventoryStatus) {
     case "INSTOCK":
@@ -569,4 +604,53 @@ const getOrderSeverity = (order) => {
 
 // };
 </script>
-<style scoped></style>
+<style scoped>
+.row {
+  display: flex;
+  justify-content: space-around;
+}
+.hide-column {
+  display: none;
+}
+/* Style the button that triggers the dropdown */
+.dropbtn {
+  background-color: #4caf50;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Style the dropdown content (hidden by default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  z-index: 1;
+  background-color: #4caf50;
+}
+
+/* Style the links inside the dropdown */
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Style the button inside the dropdown */
+.dropdown-content button {
+  background-color: #f1f1f1;
+  color: black;
+  border: none;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+</style>
