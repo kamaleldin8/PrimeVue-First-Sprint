@@ -1,29 +1,34 @@
 <template>
   <div class="card">
-    <!-- <div class="flex justify-content-center align-items-center mb-4 gap-2">
-      <InputSwitch v-model="metaKey" inputId="input-metakey" />
-      <label for="input-metakey">Single Selection</label>
-    </div> -->
     <DataTable
       v-model:filters="filters"
       v-model:editingRows="editingRows"
+      v-model:expandedRows="expandedRows"
+      @rowReorder="onRowReorder"
+      :columns="displayedColumns"
       @row-edit-save="onRowEditSave"
       tableClass="editable-cells-table"
       editMode="row"
       :value="customers"
       paginator
       filterDisplay="row"
-      :metaKeySelection="metaKey"
-      v-model:expandedRows="expandedRows"
       v-model:selection="selectedCustomers"
-      @rowReorder="onRowReorder"
       :rows="5"
       :rowsPerPageOptions="[5, 10, 20, 50]"
+      selectionMode="single"
     >
-      <Column selectionMode="multiple" :exportable="false"></Column>
-
-      <!-- add new row and delete -->
       <template #header>
+        <div style="text-align: left">
+          <MultiSelect
+            :modelValue="selectedColumns"
+            :options="columnsPrime"
+            optionLabel="header"
+            @update:modelValue="onToggle"
+            display="chip"
+            placeholder="Select Columns"
+          />
+        </div>
+
         <div class="flex justify-content-between" style="margin: 0">
           <div class="flex flex-wrap gap-2">
             <Button
@@ -31,13 +36,13 @@
               icon="pi pi-plus"
               label="Expand All"
               @click="expandAll"
-            />
+            ></Button>
             <Button
               text
               icon="pi pi-minus"
               label="Collapse All"
               @click="collapseAll"
-            />
+            ></Button>
           </div>
           <div class="add-delete-row flex gap-5">
             <Button
@@ -46,52 +51,17 @@
               severity="success"
               class="mr-2"
               @click="openNew"
-            />
+            ></Button>
             <Button
               label="Delete"
               icon="pi pi-trash"
               severity="danger"
               @click="confirmDeleteSelected"
               :disabled="!selectedCustomers || !selectedCustomers.length"
-            />
-
-            <!-- <div class="dropdown">
-              <button class="dropbtn">Select an option</button>
-              <div class="dropdown-content">
-                <a href="#" onclick="handleSelection('icon1')">
-                  <i class="fa fa-home"></i> Home</a
-                >
-                <a href="#" onclick="handleSelection('icon2')">
-                  <i class="fa fa-user"></i> Profile</a
-                >
-                <a href="#" onclick="handleSelection('icon3')">
-                  <i class="fa fa-cog"></i> Settings</a
-                >
-              </div>
-            </div> -->
-
-            <div class="dropdown">
-              <button class="dropbtn">Select an option</button>
-              <div class="dropdown-content">
-                <a href="#" data-id="name">
-                  <span>Name</span>
-                  <button @click="handleClick">show/hide</button>
-                </a>
-
-                <a href="#" data-id="company">
-                  <span>Company</span>
-                  <button @click="handleClick">show/hide</button>
-                </a>
-
-                <a href="#" data-id="balance">
-                  <span>Balance</span>
-                  <button @click="handleClick">show/hide</button>
-                </a>
-              </div>
-            </div>
+            ></Button>
           </div>
           <span class="p-input-icon-left">
-            <i class="pi pi-search" />
+            <i class="pi pi-search"></i>
             <InputText
               v-model="filters['global'].value"
               placeholder="Keyword Search"
@@ -122,115 +92,72 @@
           <Button label="Yes" icon="pi pi-check" text @click="deleteCustomer" />
         </template>
       </Dialog>
+      <div>
+        <Column
+          selectionMode="multiple"
+          style="width: 3rem"
+          :exportable="false"
+        >
+        </Column>
 
-      <Column rowReorder headerStyle="width: 3rem" :reorderableColumn="false" />
+        <Column
+          :rowReorder="disabledId == null ? true : false"
+          headerStyle="width: 3rem"
+        ></Column>
 
-      <Column expander></Column>
-      <!-- <Button @click="seen = !seen">hide</Button> -->
-
-      <Column
-        header="Name"
-        rowReorder
-        sortable
-        field="name"
-        id="same"
-        class="same"
-        style="min-width: 12rem"
-      >
-        <template #editor="{ data, field }">
-          <InputText v-model="data[field]" />
-        </template>
-        <template #body="{ data }">
-          <div>
-            <span>{{ data.name }}</span>
-          </div>
-        </template>
-        <template #filter="{ filterModel, filterCallback }">
-          <InputText
-            v-model="filterModel.value"
-            type="text"
-            @input="filterCallback()"
-            placeholder="search by name"
-          />
-          <!-- <p v-if="seen">Hidden Element</p> -->
-        </template>
-      </Column>
-      <Column
-        header="Company"
-        sortable
-        field="company"
-        class="same"
-        id="same"
-        style="min-width: 12rem"
-      >
-        <template #editor="{ data, field }">
-          <InputText v-model="data[field]"> </InputText>
-        </template>
-        <template #body="{ data }">
-          <div class="flex align-items-center gap-2">
-            <span>{{ data.company }}</span>
-          </div>
-        </template>
-
-        <template #filter="{ filterModel, filterCallback }">
-          <InputText
-            v-model="filterModel.value"
-            type="text"
-            @input="filterCallback()"
-            class="p-column-filter"
-            placeholder="Search by Company"
-          />
-        </template>
-      </Column>
-
-      <Column
-        header="Balance"
-        sortable
-        class="same"
-        id="same"
-        field="balance"
-        style="min-width: 12rem"
-      >
-        <template #editor="{ data, field }">
-          <InputText v-model="data[field]" />
-        </template>
-        <template #filter="{ filterModel, filterCallback }">
-          <InputText
-            v-model="filterModel.value"
-            type="text"
-            @input="filterCallback()"
-            class="p-column-filter"
-            placeholder="Search by Balance"
-          />
-        </template>
-      </Column>
-
-      <!-- <Column
-        :rowEditor="true"
-        style="width: 10%; min-width: 8rem"
-        bodyStyle="text-align:center"
-      ></Column> -->
-      <Column :exportable="false" style="min-width: 4em">
-        <template #body="slotProps">
-          <div class="flex">
-            <Button
-              icon="pi pi-pencil"
-              outlined
-              rounded
-              class="mr-2"
-              @click="editCustomer(slotProps.data)"
+        <Column :expander="true"></Column>
+        <Column
+          v-for="(col, index) of selectedColumns"
+          :field="col.field"
+          :header="col.header"
+          sortable
+          :key="col.field + '_' + index"
+        >
+          <template #body="{ data }">
+            <div class="flex align-items-center gap-2">
+              <span>{{ data[`${col.header.toLowerCase()}`] }}</span>
+            </div>
+          </template>
+          <template #filter="{ filterModel, filterCallback }">
+            <InputText
+              v-model="filterModel.value"
+              type="text"
+              @input="filterCallback()"
+              class="p-column-filter"
+              placeholder="Filter"
             />
-            <Button
-              icon="pi pi-trash"
-              outlined
-              rounded
-              severity="danger"
-              @click="confirmDeleteCustomer(slotProps.data)"
-            />
-          </div>
-        </template>
-      </Column>
+          </template>
+        </Column>
 
+        <Column :exportable="false" style="min-width: 4em">
+          <template #body="slotProps">
+            <div class="flex">
+              <Button
+                icon="pi pi-pencil"
+                outlined
+                rounded
+                class="mr-2"
+                @click="editCustomer(slotProps.data)"
+              />
+              <Button
+                icon="pi pi-trash"
+                outlined
+                rounded
+                class="mr-2"
+                severity="danger"
+                @click="confirmDeleteCustomer(slotProps.data)"
+              />
+              <Button
+                icon="pi pi-power-off"
+                outlined
+                rounded
+                severity="danger"
+                @click="disable(slotProps.data)"
+              />
+            </div>
+          </template>
+        </Column>
+      </div>
       <Dialog
         v-model:visible="customerDialog"
         :style="{ width: '450px' }"
@@ -251,16 +178,6 @@
             >Name is required.</small
           >
         </div>
-        <!-- <div class="field">
-          <label for="country">Countrty</label>
-          <Textarea
-            id="country"
-            v-model="customer.country"
-            required="true"
-            rows="3"
-            cols="20"
-          />
-        </div> -->
 
         <div class="field">
           <label for="balance" class="mb-3">Balance</label>
@@ -375,54 +292,44 @@
 import { FilterMatchMode } from "primevue/api";
 import { ref, onMounted, computed, reactive } from "vue";
 import { CustomerService } from "../service/ProductService";
-// const seen = ref(true);
 const customers = ref();
 const customer = ref();
 const submitted = ref(false);
 const selectedCustomers = ref();
-const metaKey = ref(true);
 const expandedRows = ref([]);
 const editingRows = ref([]);
 const deleteCustomerDialog = ref(false);
 const deleteCustomersDialog = ref(false);
 const customerDialog = ref(false);
-
 const visibleColumns = reactive({ name: true, company: true, balance: true });
-// const selectedColumns = ref([]);
+let disabledId = ref(null);
+
 const columnOptions = ref([
   { label: "Name", value: "name" },
   { label: "Company", value: "company" },
   { label: "Balance", value: "balance" },
 ]);
-
 const columns = ref([
   { field: "name", visible: true },
   { field: "company", visible: true },
   { field: "balance", visible: true },
 ]);
+const columnsPrime = ref([
+  { field: "name", header: "Name" },
+  { field: "company", header: "Company" },
+  { field: "balance", header: "Balance" },
+]);
+const selectedColumns = ref(columnsPrime.value);
 
-const handleClick = (event) => {
-  let optionId = event.target.parentElement.getAttribute("data-id");
-  // Do something with the selected option ID
-  let columnsShown = document.querySelectorAll('[id="same"]');
-  console.log(columnsShown);
-  for (let i = 0; i < columnsShown.length; i++) {
-    console.log(columnsShown[i]);
-  }
-  // columnsShown.map((column) => {
-  // });
-  // console.log(columnsShown);
-  console.log("Selected option ID: " + optionId);
-  // let showColumns = columns.columnsShown.filter((col) => {
-  //   col.id == optionId;
-  // });
-  // showColumns.classList.toggle("hide-column");
-};
+const displayedColumns = computed(() =>
+  columns.value.filter((column) => column.visible)
+);
 
-const selectedColumns = ref(columns.value);
-const onToggle = (val) => {
-  selectedColumns.value = columns.value.filter((col) => val.includes(col));
-};
+function updateDisplayedColumns() {
+  columns.value.forEach((column) => {
+    column.visible = selectedColumns.value.includes(column.field);
+  });
+}
 
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -448,10 +355,17 @@ const openNew = () => {
   submitted.value = false;
   customerDialog.value = true;
 };
+
 const hideDialog = () => {
   customerDialog.value = false;
   submitted.value = false;
 };
+
+const disable = (e, prod) => {
+  disabledId.value = prod.id;
+  console.log(e);
+};
+
 const confirmDeleteCustomer = (prod) => {
   customer.value = prod;
   deleteCustomerDialog.value = true;
@@ -462,14 +376,9 @@ const deleteCustomer = () => {
   );
   deleteCustomerDialog.value = false;
   customer.value = {};
-  // toast.add({
-  //   severity: "success",
-  //   summary: "Successful",
-  //   detail: "Product Deleted",
-  //   life: 3000,
-  // });
 };
 const confirmDeleteSelected = () => {
+  console.log("confirmed");
   deleteCustomersDialog.value = true;
 };
 const saveProduct = () => {
@@ -533,7 +442,6 @@ const deleteSelectedCustomers = () => {
 
 const onRowReorder = (event) => {
   customers.value = event.value;
-  toast.add({ severity: "success", summary: "Rows Reordered", life: 3000 });
 };
 
 const expandAll = () => {
@@ -562,6 +470,9 @@ const findIndexById = (id) => {
   return index;
 };
 
+const onToggle = (val) => {
+  selectedColumns.value = columnsPrime.value.filter((col) => val.includes(col));
+};
 const getSeverity = (product) => {
   switch (product.inventoryStatus) {
     case "INSTOCK":
@@ -595,62 +506,5 @@ const getOrderSeverity = (order) => {
       return null;
   }
 };
-// const darkModeFunc = () => {
-//   // let cardElement = document.querySelector(".card");
-//   let DataTable = document.querySelector(".p-datatable-tbody");
-//   // cardElement.classList.toggle("dark-mode");
-//   console.log(DataTable);
-//   DataTable.classList.toggle("dark-mode");
-
-// };
 </script>
-<style scoped>
-.row {
-  display: flex;
-  justify-content: space-around;
-}
-.hide-column {
-  display: none;
-}
-/* Style the button that triggers the dropdown */
-.dropbtn {
-  background-color: #4caf50;
-  color: white;
-  padding: 16px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-}
-
-/* Style the dropdown content (hidden by default) */
-.dropdown-content {
-  display: none;
-  position: absolute;
-  z-index: 1;
-  background-color: #4caf50;
-}
-
-/* Style the links inside the dropdown */
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: flex;
-  justify-content: space-between;
-}
-
-/* Style the button inside the dropdown */
-.dropdown-content button {
-  background-color: #f1f1f1;
-  color: black;
-  border: none;
-  padding: 8px 16px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-/* Show the dropdown menu on hover */
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-</style>
+<style scoped></style>

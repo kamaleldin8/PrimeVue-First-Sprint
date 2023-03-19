@@ -12,7 +12,6 @@ import Dialog from "primevue/dialog";
 import TextArea from "primevue/textarea";
 import Dropdown from "primevue/Dropdown";
 import MultiSelect from "primevue/multiselect";
-import TreeTable from "primevue/TreeTable";
 import router from "./router";
 
 import "@/assets/styles.scss";
@@ -21,7 +20,6 @@ const app = createApp(App);
 app.use(PrimeVue, { ripple: true });
 app.use(router);
 app.component("Tag", Tag);
-app.component("TreeTable", TreeTable);
 app.component("TextArea", TextArea);
 app.component("Dialog", Dialog);
 app.component("ProgressBar", ProgressBar);

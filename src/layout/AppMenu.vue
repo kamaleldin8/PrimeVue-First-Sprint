@@ -37,6 +37,13 @@ const model = ref([
     ]
   },
   {
+    label: 'Data Table Prime View',
+    items: [
+        { label: 'Data Table Prime', icon: 'pi pi-fw pi-eye', to: '/datatablePrime', badge: 'NEW' },
+    //     { label: 'All Blocks', icon: 'pi pi-fw pi-globe', url: 'https://www.primefaces.org/primeblocks-vue', target: '_blank' }
+    ]
+  },
+  {
     // label: 'Utilities',
     // items: [
     //     { label: 'PrimeIcons', icon: 'pi pi-fw pi-prime', to: '/utilities/icons' },
