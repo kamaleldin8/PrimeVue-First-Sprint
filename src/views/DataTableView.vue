@@ -15,7 +15,6 @@
       v-model:selection="selectedCustomers"
       :rows="5"
       :rowsPerPageOptions="[5, 10, 20, 50]"
-      selectionMode="single"
     >
       <template #header>
         <div style="text-align: left">
@@ -292,6 +291,7 @@
 import { FilterMatchMode } from "primevue/api";
 import { ref, onMounted, computed, reactive } from "vue";
 import { CustomerService } from "../service/ProductService";
+import DataTable from "../components/DataTable.vue";
 const customers = ref();
 const customer = ref();
 const submitted = ref(false);
@@ -361,9 +361,8 @@ const hideDialog = () => {
   submitted.value = false;
 };
 
-const disable = (e, prod) => {
+const disable = (prod) => {
   disabledId.value = prod.id;
-  console.log(e);
 };
 
 const confirmDeleteCustomer = (prod) => {

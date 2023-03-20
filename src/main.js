@@ -26,7 +26,7 @@ app.component("ProgressBar", ProgressBar);
 app.component("MultiSelect", MultiSelect);
 app.component("Button", Button);
 app.component("InputText", InputText);
-app.component("DataTable", DataTable);
+//app.component("DataTable", DataTable);
 app.component("InputSwitch", InputSwitch);
 app.component("Dropdown", Dropdown);
 app.component("Column", Column);
