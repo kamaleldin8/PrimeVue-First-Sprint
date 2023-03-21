@@ -1,19 +1,5 @@
 <template>
   <div class="card">
-    <!-- <div class="flex justify-content-center align-items-center mb-4 gap-2">
-      <InputSwitch v-model="metaKey" inputId="input-metakey" />
-      <label for="input-metakey">Single Selection</label>
-    </div> -->
-    <div class="p-mb-2">
-      <!-- <MultiSelect
-        v-model="selectedColumns"
-        :options="columnOptions"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Select columns"
-        @onChange="updateDisplayedColumns"
-      ></MultiSelect> -->
-    </div>
     <DataTable
       v-model:filters="filters"
       v-model:editingRows="editingRows"
@@ -28,15 +14,13 @@
       v-model:expandedRows="expandedRows"
       v-model:selection="selectedCustomers"
       @rowReorder="onRowReorder"
-      :reorderableColumns="true"
       :rows="5"
       :rowsPerPageOptions="[5, 10, 20, 50]"
     >
-      <!-- multiSeletion -->
-      <!-- <Column selectionMode="multiple" :exportable="false"></Column> -->
-      <!-- add new row and delete -->
+    
       <template #header>
         <div style="text-align: left">
+          
           <MultiSelect
             :modelValue="selectedColumns"
             :options="columnsPrime"
@@ -111,8 +95,9 @@
         </template>
       </Dialog>
 
-      <Column selectionMode="multiple" style="width: 3rem" :exportable="false">
+      <Column selectionMode="multiple" style="width: 3rem" :exportable="false"> 
       </Column>
+
       <Column rowReorder headerStyle="width: 3rem" />
 
       <Column expander></Column>

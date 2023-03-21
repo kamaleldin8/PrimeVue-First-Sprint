@@ -4,6 +4,7 @@ import HomeView from "../views/HomeView.vue";
 import ProgressView from "../views/ProgressView.vue";
 import DataTableView from "../views/DataTableView.vue";
 import DataTablePrimeView from "../views/DataTablePrimeView.vue"
+import TestDraggable from "../components/TestDraggable.vue"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +28,11 @@ const router = createRouter({
         {
           path: "/datatableprime",
           component: DataTablePrimeView,
+        },
+        
+        {
+          path: "/draggable",
+          component: TestDraggable,
         },
       ],
     },

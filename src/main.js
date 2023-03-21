@@ -11,7 +11,7 @@ import Tag from "primevue/tag";
 import Dialog from "primevue/dialog";
 import TextArea from "primevue/textarea";
 import Dropdown from "primevue/Dropdown";
-import MultiSelect from "primevue/multiselect";
+import MultiSelect from "./components/MultiSelect.vue";
 import router from "./router";
 
 import "@/assets/styles.scss";
