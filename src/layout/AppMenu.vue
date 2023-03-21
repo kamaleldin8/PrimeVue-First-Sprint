@@ -30,19 +30,18 @@ const model = ref([
     ],
   },
   {
-    label: 'Data Table View',
+    label: "Data Table View",
     items: [
-        { label: 'Data Table', icon: 'pi pi-fw pi-eye', to: '/datatable', badge: 'NEW' },
-    //     { label: 'All Blocks', icon: 'pi pi-fw pi-globe', url: 'https://www.primefaces.org/primeblocks-vue', target: '_blank' }
-    ]
+      {
+        label: "Data Table",
+        icon: "pi pi-fw pi-eye",
+        to: "/datatable",
+        badge: "NEW",
+      },
+      //     { label: 'All Blocks', icon: 'pi pi-fw pi-globe', url: 'https://www.primefaces.org/primeblocks-vue', target: '_blank' }
+    ],
   },
-  {
-    label: 'Data Table Prime View',
-    items: [
-        { label: 'Data Table Prime', icon: 'pi pi-fw pi-eye', to: '/datatablePrime', badge: 'NEW' },
-    //     { label: 'All Blocks', icon: 'pi pi-fw pi-globe', url: 'https://www.primefaces.org/primeblocks-vue', target: '_blank' }
-    ]
-  },
+
   {
     // label: 'Utilities',
     // items: [

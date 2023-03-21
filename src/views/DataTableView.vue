@@ -15,21 +15,35 @@
       v-model:selection="selectedCustomers"
       :rows="5"
       :rowsPerPageOptions="[5, 10, 20, 50]"
+      :disabled="disabled" :disabledId="disabledId"
     >
       <template #header>
-        <div style="text-align: left">
-          <MultiSelect
-            :modelValue="selectedColumns"
-            :options="columnsPrime"
-            optionLabel="header"
-            @update:modelValue="onToggle"
-            display="chip"
-            placeholder="Select Columns"
-          />
+        <div class="flex justify-content-between mb-2 inputs-parent">
+          <div class="inputs">
+            <MultiSelect
+              :modelValue="selectedColumns"
+              :options="columnsPrime"
+              optionLabel="header"
+              @update:modelValue="onToggle"
+              display="chip"
+              placeholder="Select Columns"
+            />
+          </div>
+          <div class="inputs">
+            <span class="p-input-icon-left">
+              <i class="pi pi-search"></i>
+              <InputText
+                v-model="filters['global'].value"
+                placeholder="Keyword Search"
+              />
+            </span>
+          </div>
         </div>
-
-        <div class="flex justify-content-between" style="margin: 0">
-          <div class="flex flex-wrap gap-2">
+        <div
+          class="flex justify-content-between buttons-parent"
+          style="margin: 0"
+        >
+          <div class="flex buttons">
             <Button
               text
               icon="pi pi-plus"
@@ -43,6 +57,7 @@
               @click="collapseAll"
             ></Button>
           </div>
+
           <div class="add-delete-row flex gap-5">
             <Button
               label="New"
@@ -59,13 +74,6 @@
               :disabled="!selectedCustomers || !selectedCustomers.length"
             ></Button>
           </div>
-          <span class="p-input-icon-left">
-            <i class="pi pi-search"></i>
-            <InputText
-              v-model="filters['global'].value"
-              placeholder="Keyword Search"
-            />
-          </span>
         </div>
       </template>
       <Dialog
@@ -91,7 +99,7 @@
           <Button label="Yes" icon="pi pi-check" text @click="deleteCustomer" />
         </template>
       </Dialog>
-      <div>
+      <div :key="componentKey">
         <Column
           selectionMode="multiple"
           style="width: 3rem"
@@ -99,10 +107,7 @@
         >
         </Column>
 
-        <Column
-          :rowReorder="disabledId == null ? true : false"
-          headerStyle="width: 3rem"
-        ></Column>
+        <Column :rowReorder="true" headerStyle="width: 3rem"></Column>
 
         <Column :expander="true"></Column>
         <Column
@@ -151,6 +156,7 @@
                 outlined
                 rounded
                 severity="danger"
+                style="pointer-events: all !important"
                 @click="disable(slotProps.data)"
               />
             </div>
@@ -289,9 +295,10 @@
 
 <script setup>
 import { FilterMatchMode } from "primevue/api";
-import { ref, onMounted, computed, reactive } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { CustomerService } from "../service/ProductService";
 import DataTable from "../components/DataTable.vue";
+const componentKey = ref(0);
 const customers = ref();
 const customer = ref();
 const submitted = ref(false);
@@ -301,14 +308,8 @@ const editingRows = ref([]);
 const deleteCustomerDialog = ref(false);
 const deleteCustomersDialog = ref(false);
 const customerDialog = ref(false);
-const visibleColumns = reactive({ name: true, company: true, balance: true });
-let disabledId = ref(null);
-
-const columnOptions = ref([
-  { label: "Name", value: "name" },
-  { label: "Company", value: "company" },
-  { label: "Balance", value: "balance" },
-]);
+const disabled = ref(false);
+const disabledId = ref(0);
 const columns = ref([
   { field: "name", visible: true },
   { field: "company", visible: true },
@@ -324,12 +325,6 @@ const selectedColumns = ref(columnsPrime.value);
 const displayedColumns = computed(() =>
   columns.value.filter((column) => column.visible)
 );
-
-function updateDisplayedColumns() {
-  columns.value.forEach((column) => {
-    column.visible = selectedColumns.value.includes(column.field);
-  });
-}
 
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -361,10 +356,6 @@ const hideDialog = () => {
   submitted.value = false;
 };
 
-const disable = (prod) => {
-  disabledId.value = prod.id;
-};
-
 const confirmDeleteCustomer = (prod) => {
   customer.value = prod;
   deleteCustomerDialog.value = true;
@@ -384,16 +375,7 @@ const saveProduct = () => {
   submitted.value = true;
   if (customer.value.name.trim()) {
     if (customer.value.id) {
-      // // customer.value.inventoryStatus = customer.value.inventoryStatus.value
-      //   ? customer.value.inventoryStatus.value
-      //   : customer.value.inventoryStatus;
       customers.value[findIndexById(customer.value.id)] = customer.value;
-      // toast.add({
-      //   severity: "success",
-      //   summary: "Successful",
-      //   detail: "Customer Updated",
-      //   life: 3000,
-      // });
     } else {
       customer.value.id = createId();
       customer.value.code = createId();
@@ -401,14 +383,7 @@ const saveProduct = () => {
         ? customer.value.inventoryStatus.value
         : "INSTOCK";
       customers.value.push(customer.value);
-      // toast.add({
-      //   severity: "success",
-      //   summary: "Successful",
-      //   detail: "customer Created",
-      //   life: 3000,
-      // });
     }
-
     customerDialog.value = false;
     customer.value = {};
   }
@@ -431,16 +406,13 @@ const deleteSelectedCustomers = () => {
   );
   deleteCustomersDialog.value = false;
   selectedCustomers.value = null;
-  // toast.add({
-  //   severity: "success",
-  //   summary: "Successful",
-  //   detail: "Customer Deleted",
-  //   life: 3000,
-  // });
 };
 
-const onRowReorder = (event) => {
-  customers.value = event.value;
+const disable = (prod) => {
+  prod.disabled = !prod.disabled
+  disabled.value = !disabled.value
+  disabledId.value = prod.id;
+  componentKey.value += 1;
 };
 
 const expandAll = () => {
@@ -465,27 +437,11 @@ const findIndexById = (id) => {
       break;
     }
   }
-
   return index;
 };
 
 const onToggle = (val) => {
   selectedColumns.value = columnsPrime.value.filter((col) => val.includes(col));
-};
-const getSeverity = (product) => {
-  switch (product.inventoryStatus) {
-    case "INSTOCK":
-      return "success";
-
-    case "LOWSTOCK":
-      return "warning";
-
-    case "OUTOFSTOCK":
-      return "danger";
-
-    default:
-      return null;
-  }
 };
 const getOrderSeverity = (order) => {
   switch (order.status) {
@@ -506,4 +462,30 @@ const getOrderSeverity = (order) => {
   }
 };
 </script>
-<style scoped></style>
+<style scoped>
+.inputs .p-input-icon-left > .p-inputtext {
+  width: 16em;
+}
+@media screen and (max-width: 630px) {
+  div.inputs-parent,
+  div.buttons-parent {
+    display: flex;
+    flex-direction: column;
+  }
+
+  div.buttons-parent {
+    align-items: center;
+  }
+
+  .inputs .p-multiselect {
+    width: 100%;
+    margin-bottom: 1em;
+  }
+  .inputs .p-input-icon-left {
+    width: 100%;
+  }
+  .inputs .p-input-icon-left > .p-inputtext {
+    width: 100%;
+  }
+}
+</style>

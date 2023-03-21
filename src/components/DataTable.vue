@@ -53,7 +53,7 @@
             :style="[tableStyle, slotProps.spacerStyle]"
             v-bind="tableProps"
           >
-          <DTTableHeader
+            <DTTableHeader
               :columnGroup="headerColumnGroup"
               :columns="slotProps.columns"
               :rowGroupMode="rowGroupMode"
@@ -265,7 +265,7 @@ import {
   UniqueComponentId,
 } from "../../node_modules/primevue/utils";
 import VirtualScroller from "../../node_modules/primevue/virtualscroller";
-import TableBody from "../../node_modules/primevue/datatable/TableBody.vue";
+import TableBody from "./TableBody.vue";
 import TableFooter from "../../node_modules/primevue/datatable/TableFooter.vue";
 import TableHeader from "../../node_modules/primevue/datatable/TableHeader.vue";
 
@@ -569,6 +569,12 @@ export default {
       type: null,
       default: null,
     },
+    disabled: {
+      type: Boolean
+    },
+    disabledId: {
+      type: Number
+    }
   },
   data() {
     return {
@@ -604,6 +610,12 @@ export default {
   tableWidthState: null,
   columnWidthsRestored: false,
   watch: {
+    disabled() {
+      const id = this.disabledId
+      if (this.value[this.findIndexById(this.disabledId)].selected) {
+        this.toggleRowWithCheckbox(this.value[this.findIndexById(this.disabledId)], 'flag');
+      }
+    },
     first(newValue) {
       this.d_first = newValue;
     },
@@ -679,6 +691,17 @@ export default {
     }
   },
   methods: {
+    findIndexById(id) {
+      let index = -1;
+      for (let i = 0; i < this.value.length; i++) {
+        if (this.value[i].id === id) {
+          index = i;
+          break;
+        }
+      }
+
+      return index;
+    },
     columnProp(col, prop) {
       return ObjectUtils.getVNodeProp(col, prop);
     },
@@ -997,11 +1020,13 @@ export default {
       const event = e.originalEvent;
       const index = e.index;
       const body = this.$refs.bodyRef && this.$refs.bodyRef.$el;
+      //   body.classList.add("disabled");
       const focusedItem = DomHandler.findSingle(
         body,
         'tr.p-selectable-row[tabindex="0"]'
       );
-
+      //   selectedRow.style.pointerEvents = "none";
+      //   selectedRow.classList.toggle("disabled");
       if (DomHandler.isClickable(event.target)) {
         return;
       }
@@ -1377,15 +1402,19 @@ export default {
         });
       }
     },
-    toggleRowWithCheckbox(event) {
-      const rowData = event.data;
+    toggleRowWithCheckbox(event, flag = null) {
+      let rowData = null;
+      if (flag) {
+        rowData = event;
+      } else {
+        rowData = event.data;
+      }
 
       if (this.isSelected(rowData)) {
         const selectionIndex = this.findIndexInSelection(rowData);
         const _selection = this.selection.filter(
           (val, i) => i != selectionIndex
         );
-
         this.$emit("update:selection", _selection);
         this.$emit("row-unselect", {
           originalEvent: event.originalEvent,
@@ -1393,9 +1422,9 @@ export default {
           index: event.index,
           type: "checkbox",
         });
+        rowData.selected = false;
       } else {
         let _selection = this.selection ? [...this.selection] : [];
-
         _selection = [..._selection, rowData];
         this.$emit("update:selection", _selection);
         this.$emit("row-select", {
@@ -1404,6 +1433,7 @@ export default {
           index: event.index,
           type: "checkbox",
         });
+        rowData.selected = true;
       }
     },
     toggleRowsWithCheckbox(event) {
@@ -2718,6 +2748,12 @@ export default {
 </script>
 
 <style>
+.disabled {
+  background-color: dimgrey !important;
+  color: linen !important;
+  opacity: 1 !important;
+}
+
 .p-datatable {
   position: relative;
 }
