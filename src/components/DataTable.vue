@@ -570,11 +570,11 @@ export default {
       default: null,
     },
     disabled: {
-      type: Boolean
+      type: Boolean,
     },
     disabledId: {
-      type: Number
-    }
+      type: Number,
+    },
   },
   data() {
     return {
@@ -611,10 +611,10 @@ export default {
   columnWidthsRestored: false,
   watch: {
     disabled() {
-      const id = this.disabledId
-      if (this.value[this.findIndexById(this.disabledId)].selected) {
-        this.toggleRowWithCheckbox(this.value[this.findIndexById(this.disabledId)], 'flag');
-      }
+      const id = this.disabledId;
+      const obj = this.value[this.findIndexById(id)];
+      this.toggleRow(obj, "flag");
+      this.toggleRowWithCheckbox(obj, "flag");
     },
     first(newValue) {
       this.d_first = newValue;
@@ -1020,7 +1020,6 @@ export default {
       const event = e.originalEvent;
       const index = e.index;
       const body = this.$refs.bodyRef && this.$refs.bodyRef.$el;
-      //   body.classList.add("disabled");
       const focusedItem = DomHandler.findSingle(
         body,
         'tr.p-selectable-row[tabindex="0"]'
@@ -1422,18 +1421,18 @@ export default {
           index: event.index,
           type: "checkbox",
         });
-        rowData.selected = false;
       } else {
-        let _selection = this.selection ? [...this.selection] : [];
-        _selection = [..._selection, rowData];
-        this.$emit("update:selection", _selection);
-        this.$emit("row-select", {
-          originalEvent: event.originalEvent,
-          data: rowData,
-          index: event.index,
-          type: "checkbox",
-        });
-        rowData.selected = true;
+        if (flag == null) {
+          let _selection = this.selection ? [...this.selection] : [];
+          _selection = [..._selection, rowData];
+          this.$emit("update:selection", _selection);
+          this.$emit("row-select", {
+            originalEvent: event.originalEvent,
+            data: rowData,
+            index: event.index,
+            type: "checkbox",
+          });
+        }
       }
     },
     toggleRowsWithCheckbox(event) {
@@ -1447,8 +1446,15 @@ export default {
           _selection = this.frozenValue
             ? [...this.frozenValue, ...this.processedData]
             : this.processedData;
+          _selection = _selection.filter(
+            (val) => this.$store.state.disabledIDS.includes(val.id) == false
+          );
+          _selection.forEach((val) => {
+            val.selected = true;
+          });
           this.$emit("row-select-all", { originalEvent, data: _selection });
         } else {
+          this.value.forEach((val) => (val.selected = false));
           this.$emit("row-unselect-all", { originalEvent });
         }
 
@@ -2085,8 +2091,13 @@ export default {
       this.onRowDragEnd(event);
       event.preventDefault();
     },
-    toggleRow(event) {
-      let rowData = event.data;
+    toggleRow(event, flag = null) {
+      let rowData = null;
+      if (flag) {
+        rowData = event;
+      } else {
+        rowData = event.data;
+      }
       let expanded;
       let expandedRowIndex;
       let _expandedRows = this.expandedRows ? [...this.expandedRows] : [];
@@ -2111,9 +2122,11 @@ export default {
         this.$emit("update:expandedRows", _expandedRows);
         this.$emit("row-collapse", event);
       } else {
-        _expandedRows.push(rowData);
-        this.$emit("update:expandedRows", _expandedRows);
-        this.$emit("row-expand", event);
+        if (flag == null) {
+          _expandedRows.push(rowData);
+          this.$emit("update:expandedRows", _expandedRows);
+          this.$emit("row-expand", event);
+        }
       }
     },
     toggleRowGroup(e) {

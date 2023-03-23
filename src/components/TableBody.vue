@@ -39,7 +39,11 @@
         <tr
           v-if="expandableRowGroups ? isRowGroupExpanded(rowData) : true"
           :key="getRowKey(rowData, getRowIndex(index))"
-          :class="rowData.disabled ? 'dis' : getRowClass(rowData)"
+          :class="
+            this.$store.state.disabledIDS.includes(rowData.id)
+              ? 'dis'
+              : getRowClass(rowData)
+          "
           :style="rowStyle"
           :tabindex="setRowTabindex(index)"
           role="row"
@@ -147,7 +151,7 @@ import {
   ObjectUtils,
   UniqueComponentId,
 } from "../../node_modules/primevue/utils";
-import BodyCell from './BodyCell.vue';
+import BodyCell from "./BodyCell.vue";
 
 export default {
   name: "TableBody",

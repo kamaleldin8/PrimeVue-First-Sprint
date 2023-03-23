@@ -15,7 +15,8 @@
       v-model:selection="selectedCustomers"
       :rows="5"
       :rowsPerPageOptions="[5, 10, 20, 50]"
-      :disabled="disabled" :disabledId="disabledId"
+      :disabled="disabled"
+      :disabledId="disabledId"
     >
       <template #header>
         <div class="flex justify-content-between mb-2 inputs-parent">
@@ -155,7 +156,7 @@
                 icon="pi pi-power-off"
                 outlined
                 rounded
-                severity="danger"
+                severity="warning"
                 style="pointer-events: all !important"
                 @click="disable(slotProps.data)"
               />
@@ -298,6 +299,8 @@ import { FilterMatchMode } from "primevue/api";
 import { ref, onMounted, computed } from "vue";
 import { CustomerService } from "../service/ProductService";
 import DataTable from "../components/DataTable.vue";
+import { useStore } from "vuex";
+const store = useStore();
 const componentKey = ref(0);
 const customers = ref();
 const customer = ref();
@@ -344,6 +347,7 @@ const getCustomers = (data) => {
     return d;
   });
 };
+
 // add new row and delete
 const openNew = () => {
   customer.value = {};
@@ -409,10 +413,15 @@ const deleteSelectedCustomers = () => {
 };
 
 const disable = (prod) => {
-  prod.disabled = !prod.disabled
-  disabled.value = !disabled.value
+  disabled.value = !disabled.value;
   disabledId.value = prod.id;
   componentKey.value += 1;
+  let storeArray = store.state.disabledIDS;
+  if (storeArray.includes(prod.id)) {
+    storeArray.splice(storeArray.indexOf(prod.id), 1);
+  } else {
+    storeArray.push(prod.id);
+  }
 };
 
 const expandAll = () => {

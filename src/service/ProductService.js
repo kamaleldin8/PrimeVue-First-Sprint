@@ -18,8 +18,6 @@ export const CustomerService = {
           image: "ionibowcher.png",
         },
         balance: 70663,
-        disabled: false,
-        selected: false,
       },
       {
         id: 1001,
@@ -38,8 +36,6 @@ export const CustomerService = {
           image: "amyelsner.png",
         },
         balance: 82429,
-        disabled: false,
-        selected: false,
       },
       {
         id: 1002,
@@ -58,8 +54,6 @@ export const CustomerService = {
           image: "asiyajavayant.png",
         },
         balance: 28334,
-        disabled: false,
-        selected: false,
       },
       {
         id: 1003,
@@ -78,8 +72,6 @@ export const CustomerService = {
           image: "xuxuefeng.png",
         },
         balance: 88521,
-        disabled: false,
-        selected: false,
       },
       {
         id: 1004,
@@ -98,10 +90,8 @@ export const CustomerService = {
           image: "asiyajavayant.png",
         },
         balance: 93905,
-        disabled: false,
-        selected: false,
       },
-      {
+      /* {
         id: 1005,
         name: "Simona Morasca",
         country: {
@@ -9010,7 +9000,7 @@ export const CustomerService = {
           image: "amyelsner.png",
         },
         balance: 88090,
-      },
+      }, */
     ];
   },
 
